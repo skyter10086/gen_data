@@ -176,7 +176,7 @@ for my $ar (@$aoa) {
         ++$i;
         print "\[$i\]    $sn_ :账号数据写入失败！";
     }
-    sleep 1;
+    #sleep 1;
 }
 #csv ( in => $rows_, out => 'new.csv', headers => ['sn', 'name', 'id', 'tel', 'addr', 'stat', 'account', 'bank'] );
 #p $aoa_;
