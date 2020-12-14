@@ -69,7 +69,7 @@ sub get_json {
     my $url = shift;
     my $headers = shift;
     
-    
+    #p $headers;
     my $ua = LWP::UserAgent->new(timeout=>10);
     $ua->default_headers($headers);
     
@@ -78,13 +78,20 @@ sub get_json {
     my $response = $ua->request($req);
     
     my $content = $response->decoded_content;
+    my $len = length($content);
     #p $content;
 
     my $json = JSON->new->allow_nonref;
+    my ($perl_scalar, $characters) = $json->decode_prefix($content);
+    
+    if ($characters == $len) {
+        my $data_scalar = $json->decode($content) or undef;
 
-    my $data_scalar = $json->decode($content) or undef;
-
-    return $data_scalar;
+        return $data_scalar;
+    } else {
+        return;
+    }
+    
     
 }
 
@@ -141,7 +148,7 @@ my $headers_ = $http_[0];
 
 #p $rest_;
 
-my $sn_file = 'sn_bak.csv';
+my $sn_file = 'sn_1.csv';
 my $aoa = csv (in=>$sn_file);
 #p $aoa;
 my $rows_ = [];
@@ -157,16 +164,19 @@ for my $ar (@$aoa) {
     my $url_n = setup_url($url_,qr/personId=/,$sn_);
     my $json_ = get_json($method_,$url_n,$headers_);
     
-    my $rest_ar = gen_data( $json_ ) ;
+    
     #p $rest_ar;
     #push  @$rows_, $rest_ar;
-    if ($rest_ar) {
+    if ($json_) {
+        my $rest_ar = gen_data( $json_ ) ;
         $csv->say ($fh, $rest_ar);
-        $i = $i + 1;
+        ++$i;
         print "\[$i\]    $sn_ :账号数据写入成功。\n";
     } else {
+        ++$i;
         print "\[$i\]    $sn_ :账号数据写入失败！";
     }
+    sleep 1;
 }
 #csv ( in => $rows_, out => 'new.csv', headers => ['sn', 'name', 'id', 'tel', 'addr', 'stat', 'account', 'bank'] );
 #p $aoa_;
